@@ -50,7 +50,7 @@ def main():
     ekf = EKF(initialization_duration=5.0, sample_rate=100)
     
     last_time = time.time()
-    step = 0  # ✅ Compteur pour timeline
+    step = 0
     
     print("🚀 Démarrage du système...")
     
@@ -64,8 +64,7 @@ def main():
             dt = current_time - last_time
             last_time = current_time
             
-            # ✅ CORRECTION : Créer des arrays 1D (shape (3,))
-            accel = np.array([data['ax'], data['ay'], data['az']])  # (3,)
+            accel = np.array([data['ax'], -data['ay'], -data['az']])  # (3,) voir datasheet p83
             gyro = np.array([data['gx'], data['gy'], data['gz']])      # (3,)
             mag = np.array([data['mx'], data['my'], data['mz']])       # (3,)
             

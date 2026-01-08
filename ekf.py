@@ -110,7 +110,7 @@ class EKF:
         
         # 2. Biais accéléro (moyenne - gravité)
         accel_mean = np.mean(accel_data, axis=0)
-        b_accel = accel_mean - np.array([0, 0, GRAVITY])
+        b_accel = accel_mean - np.array([0, 0, -GRAVITY])
         
         # 3. Quaternion initial (magnéto pour yaw, roll/pitch ≈ 0)
         mag_mean = np.mean(mag_data, axis=0)
