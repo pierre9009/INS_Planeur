@@ -1,7 +1,6 @@
 import time
 import struct
 import serial
-import math
 
 # Protocole
 SYNC1 = 0xAA
