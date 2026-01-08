@@ -44,13 +44,13 @@ def main():
                 progress = ekf.compute_initial_state(imu_data)
                 if progress is not None:
                     # ✅ Définir timeline pour la calibration
-                    rr.set_time_sequence("step", step)
+                    rr.set_time("step", step)
                     rr.log("debug/calib_progress", rr.Scalars([progress * 100]))
                     step += 1
                 continue
             
             # ✅ Définir timeline pour la navigation
-            rr.set_time_sequence("step", step)
+            rr.set_time("step", step)
             step += 1
             
             ekf.predict(imu_data, dt)
