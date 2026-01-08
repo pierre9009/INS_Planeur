@@ -59,13 +59,6 @@ class EKF:
     def compute_initial_state(self, imu_data, gps_data=None):
         """
         Accumule échantillons pour calibration puis initialise l'état.
-        
-        Args:
-            imu_data: dict avec clés 'gyro' [gx,gy,gz], 'accel' [ax,ay,az], 'mag' [mx,my,mz]
-            gps_data: dict optionnel avec clé 'position' [px,py,pz]
-        
-        Returns:
-            float: progression calibration (0.0 à 1.0), ou None si terminé
         """
             
         if self.isInitialized:
@@ -80,21 +73,20 @@ class EKF:
         self._calib_gyro.append(imu_data['gyro'])
         self._calib_accel.append(imu_data['accel'])
         self._calib_mag.append(imu_data['mag'])
-                               
+                            
         if gps_data is not None and 'position' in gps_data:
             self._calib_gps.append(gps_data['position'])
         
-        
         n_samples = len(self._calib_gyro)
         
-        # Vérifier si calibration complète (continue seulement si on a toute les valeurs necessaires)
+        # Vérifier si calibration complète
         if n_samples < self.n_samples_needed:
             return n_samples / self.n_samples_needed
         
-        # Calcul état initial
-        gyro_data = np.array(self._calib_gyro)
-        accel_data = np.array(self._calib_accel)
-        mag_data = np.array(self._calib_mag)
+        # ✅ CORRECTION : Stack les arrays pour avoir shape (n_samples, 3)
+        gyro_data = np.vstack(self._calib_gyro)      # (n, 3)
+        accel_data = np.vstack(self._calib_accel)    # (n, 3)
+        mag_data = np.vstack(self._calib_mag)        # (n, 3)
         
         # Vérification immobilité
         gyro_std = np.std(gyro_data, axis=0)
@@ -105,44 +97,43 @@ class EKF:
         if np.max(accel_std) > 0.15:
             print(f"   ⚠️  Accéléromètre a bougé pendant calibration (std={accel_std})")
         
-        # 1. Biais gyro (moyenne)
+        # ✅ 1. Biais gyro (moyenne) - shape (3,)
         b_gyro = np.mean(gyro_data, axis=0)
         
-        # 2. Biais accéléro (moyenne - gravité)
-        accel_mean = np.mean(accel_data, axis=0)
-        b_accel = accel_mean - np.array([[0], [0], [-GRAVITY]])
+        # ✅ 2. Biais accéléro (moyenne - gravité) - shape (3,)
+        accel_mean = np.mean(accel_data, axis=0)  # (3,)
+        gravity_vec = np.array([0, 0, -GRAVITY])   # (3,)
+        b_accel = accel_mean - gravity_vec         # (3,)
         
-        # 3. Quaternion initial (magnéto pour yaw, roll/pitch ≈ 0)
+        # ✅ 3. Quaternion initial - shape (4, 1)
         mag_mean = np.mean(mag_data, axis=0)
-        yaw_0 = np.arctan2(mag_mean[1], mag_mean[0]) #on suppose le planeur horizontale
+        yaw_0 = np.arctan2(mag_mean[1], mag_mean[0])
+        q_0 = Utils.quaternion_from_euler(0, 0, yaw_0)  # (4, 1)
         
-        q_0 = Utils.quaternion_from_euler(0, 0, yaw_0)
-        
-        # 4. Position initiale (moyenne GPS ou zéro)
+        # ✅ 4. Position initiale - shape (3,)
         if len(self._calib_gps) > 0:
-            p_0 = np.mean(self._calib_gps, axis=0)
+            gps_data_stacked = np.vstack(self._calib_gps)
+            p_0 = np.mean(gps_data_stacked, axis=0)  # (3,)
         else:
             p_0 = np.zeros(3)
             print("   ⚠️  Pas de GPS pendant calibration, position = [0,0,0]")
 
-        
-        # 5. Construire vecteur d'état [16x1]
-
+        # ✅ 5. Construire vecteur d'état [16x1] - PROPREMENT
         self.x = np.array([
-            q_0[0].item(), q_0[1].item(), q_0[2].item(), q_0[3].item(),  # quaternion (4)
-            p_0[0].item(), p_0[1].item(), p_0[2].item(),           # position (3)
-            0, 0, 0,                          # vitesse (3)
-            b_gyro[0].item(), b_gyro[1].item(), b_gyro[2].item(),  # biais gyro (3)
-            b_accel[0].item(), b_accel[1].item(), b_accel[2].item() # biais accel (3)
+            q_0[0, 0], q_0[1, 0], q_0[2, 0], q_0[3, 0],  # quaternion (4)
+            p_0[0], p_0[1], p_0[2],                       # position (3)
+            0, 0, 0,                                       # vitesse (3)
+            b_gyro[0], b_gyro[1], b_gyro[2],              # biais gyro (3)
+            b_accel[0], b_accel[1], b_accel[2]            # biais accel (3)
         ]).reshape((16, 1))
         
         self.isInitialized = True
         
         print(f"✅ Calibration terminée!")
-        print(f"   Biais gyro:  [{b_gyro[0].item():.4f}, {b_gyro[1].item():.4f}, {b_gyro[2].item():.4f}] rad/s")
-        print(f"   Biais accel: [{b_accel[0].item():.3f}, {b_accel[1].item():.3f}, {b_accel[2].item():.3f}] m/s²")
-        print(f"   Yaw initial: {np.rad2deg(yaw_0).item():.1f}°")
-        print(f"   Position:    [{p_0[0].item():.2f}, {p_0[1].item():.2f}, {p_0[2].item():.2f}]")
+        print(f"   Biais gyro:  [{b_gyro[0]:.4f}, {b_gyro[1]:.4f}, {b_gyro[2]:.4f}] rad/s")
+        print(f"   Biais accel: [{b_accel[0]:.3f}, {b_accel[1]:.3f}, {b_accel[2]:.3f}] m/s²")
+        print(f"   Yaw initial: {np.rad2deg(yaw_0):.1f}°")
+        print(f"   Position:    [{p_0[0]:.2f}, {p_0[1]:.2f}, {p_0[2]:.2f}]")
         
         return None
 
