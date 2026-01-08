@@ -15,18 +15,18 @@ def main():
     
     rr.log("world", rr.ViewCoordinates.RUB, static=True)
 
-    rr.log("telemetry/velocity_norm", rr.SeriesLines(names="Velocity (m/s)", color=[255, 0, 0]), static=True)
-    rr.log("telemetry/altitude", rr.SeriesLines(names="Altitude (m)", color=[0, 255, 0]), static=True)
+    rr.log("telemetry/velocity_norm", rr.SeriesLines(names="Velocity (m/s)", colors=[255, 0, 0]), static=True)
+    rr.log("telemetry/altitude", rr.SeriesLines(names="Altitude (m)", colors=[0, 255, 0]), static=True)
 
-    rr.log("debug/bias/gyro_x", rr.SeriesLines(names="Bias Gyro X", color=[255, 100, 0]), static=True)
-    rr.log("debug/bias/gyro_y", rr.SeriesLines(names="Bias Gyro Y", color=[255, 150, 0]), static=True)
-    rr.log("debug/bias/gyro_z", rr.SeriesLines(names="Bias Gyro Z", color=[255, 200, 0]), static=True)
+    rr.log("debug/bias/gyro_x", rr.SeriesLines(names="Bias Gyro X", colors=[255, 100, 0]), static=True)
+    rr.log("debug/bias/gyro_y", rr.SeriesLines(names="Bias Gyro Y", colors=[255, 150, 0]), static=True)
+    rr.log("debug/bias/gyro_z", rr.SeriesLines(names="Bias Gyro Z", colors=[255, 200, 0]), static=True)
 
-    rr.log("debug/bias/accel_x", rr.SeriesLines(names="Bias Gyro X", color=[255, 100, 0]), static=True)
-    rr.log("debug/bias/accel_y", rr.SeriesLines(names="Bias Gyro Y", color=[255, 150, 0]), static=True)
-    rr.log("debug/bias/accel_z", rr.SeriesLines(names="Bias Gyro Z", color=[255, 200, 0]), static=True)
+    rr.log("debug/bias/accel_x", rr.SeriesLines(names="Bias Gyro X", colors=[255, 100, 0]), static=True)
+    rr.log("debug/bias/accel_y", rr.SeriesLines(names="Bias Gyro Y", colors=[255, 150, 0]), static=True)
+    rr.log("debug/bias/accel_z", rr.SeriesLines(names="Bias Gyro Z", colors=[255, 200, 0]), static=True)
 
-    rr.log("debug/accel_raw_norm", rr.SeriesLines(names="Accel Norm", color=[0, 200, 255]), static=True)
+    rr.log("debug/accel_raw_norm", rr.SeriesLines(names="Accel Norm", colors=[0, 200, 255]), static=True)
     
     imu = ImuReader(port="/dev/ttyS0", baudrate=115200)
     ekf = EKF(initialization_duration=5.0, sample_rate=100)
