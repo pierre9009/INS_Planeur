@@ -7,13 +7,13 @@ from imu_api import ImuReader
 def main():
     PC_IP = "192.168.1.144"
     
-    # Initialisation de Rerun (version 0.28+)
+    # Initialisation de Rerun
     rr.init("Glider_INS_Remote", spawn=False)
     
     print(f"📡 Tentative de connexion à {PC_IP}:9876...")
     
-    # CORRECTION : utiliser connect_tcp au lieu de connect
-    rr.connect_tcp(f"{PC_IP}:9876")
+    # Utiliser connect_grpc
+    rr.connect_grpc(addr=f"{PC_IP}:9876")
     
     print("✅ Connecté!")
     
@@ -64,10 +64,8 @@ def log_to_rerun(ekf, raw_data):
     bg = ekf.x[10:13].flatten()
     ba = ekf.x[13:16].flatten()
     
-    # Quaternion : Rerun attend [x, y, z, w]
     rr_quat = [q[1], q[2], q[3], q[0]]
     
-    # Visualisation 3D
     rr.log(
         "world/glider",
         rr.Transform3D(
@@ -81,16 +79,13 @@ def log_to_rerun(ekf, raw_data):
         rr.Boxes3D(half_sizes=[0.5, 0.2, 0.05], colors=[0, 255, 0])
     )
     
-    # Télémétrie
     rr.log("telemetry/velocity_norm", rr.Scalar(np.linalg.norm(vel)))
     rr.log("telemetry/altitude", rr.Scalar(pos[2]))
     
-    # Biais
     rr.log("debug/bias/gyro_x", rr.Scalar(bg[0]))
     rr.log("debug/bias/gyro_y", rr.Scalar(bg[1]))
     rr.log("debug/bias/gyro_z", rr.Scalar(bg[2]))
     
-    # Données brutes
     rr.log("debug/accel_raw_norm", rr.Scalar(np.linalg.norm([raw_data['ax'], raw_data['ay'], raw_data['az']])))
 
 if __name__ == "__main__":
