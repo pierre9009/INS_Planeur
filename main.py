@@ -14,6 +14,7 @@ def main():
     print("✅ Connecté!")
     
     rr.log("world", rr.ViewCoordinates.RUB, static=True)
+    rr.log("world/glider/mesh",rr.Asset3D(path="/mesh/planeur.glb"),static=True)
     # === LOGS TÉLÉMÉTRIE ===
     rr.log("telemetry/velocity_norm", rr.SeriesLines(colors=[[255, 0, 0]], names=["Velocity (m/s)"]), static=True)
     rr.log("telemetry/altitude", rr.SeriesLines(colors=[[0, 255, 0]], names=["Altitude (m)"]), static=True)
