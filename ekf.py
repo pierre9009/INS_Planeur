@@ -185,7 +185,7 @@ class EKF:
         R = Utils.quaternion_to_rotation_matrix(q) #body vers NED
         accel_ned = R @ accel_body
         gravity_ned = np.array([[0], [0], [GRAVITY]])
-        v_new = v + (accel_ned + gravity_ned) * dt
+        v_new = v + (accel_ned - gravity_ned) * dt
 
         # 3. Propager position
         p_new = p + v * dt
