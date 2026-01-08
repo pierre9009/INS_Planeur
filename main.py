@@ -30,14 +30,14 @@ def main():
     
     with imu:
         while True:
-            data = imu.read(timeout=0.1)
+            data = imu.read(timeout=0.1)    
             if data is None:
                 continue
             current_time = time.time()
             dt = current_time - last_time
             last_time = current_time
             
-            accel = np.array([data['ax'], data['ay'], data['az']]).reshape(3, 1)
+            accel = np.array([data['ax'], -data['ay'], -data['az']]).reshape(3, 1)
             gyro = np.array([data['gx'], data['gy'], data['gz']]).reshape(3, 1)
             mag = np.array([data['mx'], data['my'], data['mz']]).reshape(3, 1)
             
