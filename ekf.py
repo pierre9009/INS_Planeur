@@ -53,7 +53,7 @@ class EKF:
         
         # 4. Bruits de mesure (multiples) (à ajuster selon datasheet)
         self.R_gps = np.diag([25, 25, 100, 0.25, 0.25, 0.64])
-        self.R_accel = np.diag([0.04, 0.04, 0.04])
+        self.R_accel = np.diag([0.1, 0.1, 0.1])
         self.R_heading = (5 * np.pi/180)**2
     
     def compute_initial_state(self, imu_data, gps_data=None):
