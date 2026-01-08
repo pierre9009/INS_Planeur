@@ -16,7 +16,7 @@ def main():
     rr.log(
     "world",
     rr.ViewCoordinates(
-        xyz=rr.components.ViewCoordinates.RDF  # Right=East, Down=Down, Forward=North
+        xyz=rr.components.ViewCoordinates.FRD  # Right=East, Down=Down, Forward=North
     ),
     static=True
     )
