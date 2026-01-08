@@ -52,14 +52,12 @@ def main():
             # ✅ Définir timeline pour la navigation
             rr.set_time("step", sequence=step)
             step += 1
-            time1=time.time()
             ekf.predict(imu_data, dt)
             ekf.update(imu_data, gps_data=None, phase="glide")
             
-            
-            log_to_rerun(ekf, data)
-            time2=time.time()
-            print(time2-time1)
+            if step%3 == 0:
+                log_to_rerun(ekf, data)
+
 
 def log_to_rerun(ekf, raw_data):
     """ Centralise l'envoi des données à Rerun """
