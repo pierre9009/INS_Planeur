@@ -90,9 +90,9 @@ def log_to_rerun(ekf, raw_data):
     rr.log("telemetry/velocity_norm", rr.Scalars([float(np.linalg.norm(vel))]))
     rr.log("telemetry/altitude", rr.Scalars([float(pos[2])]))
     
-    rr.log("debug/bias/gyro_x", rr.Scalars([float(bg[0])]))
-    rr.log("debug/bias/gyro_y", rr.Scalars([float(bg[1])]))
-    rr.log("debug/bias/gyro_z", rr.Scalars([float(bg[2])]))
+    rr.log("debug/bias/gyro_x", rr.Scalars([float(ba[0])]))
+    rr.log("debug/bias/gyro_y", rr.Scalars([float(ba[1])]))
+    rr.log("debug/bias/gyro_z", rr.Scalars([float(ba[2])]))
     
     accel_norm = np.sqrt(raw_data['ax']**2 + raw_data['ay']**2 + raw_data['az']**2)
     rr.log("debug/accel_raw_norm", rr.Scalars([float(accel_norm)]))
