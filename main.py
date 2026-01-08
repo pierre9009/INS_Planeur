@@ -61,7 +61,7 @@ def log_to_rerun(ekf, raw_data):
     bg = ekf.x[10:13].flatten()
     ba = ekf.x[13:16].flatten()
     
-    rr_quat = [q[1].item(), q[2].item(), q[3].item(), q[0].item()]
+    rr_quat = [q[1], q[2], q[3], q[0]]
     
     rr.log(
         "world/glider",
@@ -76,14 +76,14 @@ def log_to_rerun(ekf, raw_data):
         rr.Boxes3D(half_sizes=[0.5, 0.2, 0.05], colors=[0, 255, 0])
     )
     
-    rr.log("telemetry/velocity_norm", rr.Scalars(np.linalg.norm(vel).item()))
-    rr.log("telemetry/altitude", rr.Scalars(pos[2].item()))
+    rr.log("telemetry/velocity_norm", rr.Scalars(np.linalg.norm(vel)))
+    rr.log("telemetry/altitude", rr.Scalars(pos[2]))
     
-    rr.log("debug/bias/gyro_x", rr.Scalars(bg[0].item()))
-    rr.log("debug/bias/gyro_y", rr.Scalars(bg[1].item()))
-    rr.log("debug/bias/gyro_z", rr.Scalars(bg[2].item()))
+    rr.log("debug/bias/gyro_x", rr.Scalars(bg[0]))
+    rr.log("debug/bias/gyro_y", rr.Scalars(bg[1]))
+    rr.log("debug/bias/gyro_z", rr.Scalars(bg[2]))
     
-    rr.log("debug/accel_raw_norm", rr.Scalars(np.linalg.norm([raw_data['ax'], raw_data['ay'], raw_data['az']]).item()))
+    rr.log("debug/accel_raw_norm", rr.Scalars(np.linalg.norm([raw_data['ax'], raw_data['ay'], raw_data['az']])))
 
 if __name__ == "__main__":
     main()
