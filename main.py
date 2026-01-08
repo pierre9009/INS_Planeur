@@ -55,10 +55,11 @@ def main():
             time1=time.time()
             ekf.predict(imu_data, dt)
             ekf.update(imu_data, gps_data=None, phase="glide")
-            time2=time.time()
-            print(time2-time1)
+            
             
             log_to_rerun(ekf, data)
+            time2=time.time()
+            print(time2-time1)
 
 def log_to_rerun(ekf, raw_data):
     """ Centralise l'envoi des données à Rerun """
