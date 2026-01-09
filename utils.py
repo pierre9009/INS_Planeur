@@ -101,21 +101,13 @@ class Utils:
         q2 = q[2].item()
         q3 = q[3].item()
 
-        bgx = biais_gyro[0]
-        bgy = biais_gyro[1]
-        bgz = biais_gyro[2]
+        wcx = (omega[0]).item()
+        wcy = (omega[1]).item()
+        wcz = (omega[2]).item()
 
-        bax = biais_acc[0]
-        bay = biais_acc[1]
-        baz = biais_acc[2]
-
-        wcx = (omega[0] - bgx).item()
-        wcy = (omega[1] - bgy).item()
-        wcz = (omega[2] - bgz).item()
-
-        acx = (accel_body[0] - bax).item()
-        acy = (accel_body[1] - bay).item()
-        acz = (accel_body[2] - baz).item()
+        acx = (accel_body[0]).item()
+        acy = (accel_body[1]).item()
+        acz = (accel_body[2]).item()
 
 
 
