@@ -107,16 +107,18 @@ class EKF:
         if np.max(accel_std) > 0.15:
             print(f"   ⚠️  Accéléromètre a bougé pendant calibration (std={accel_std})")
         
-        # 1. Biais gyro (moyenne)
+        # 1. Biais gyro (moyenne at rest = bias)
         b_gyro = np.mean(gyro_data, axis=0)
-        
-        # 2. Biais accéléro (moyenne - gravité)
-        #b_accel = accel_mean - np.array([0, 0, -GRAVITY])
-        b_accel = np.zeros(3)
+
+        # 2. Biais accéléro (moyenne - expected gravity reading)
+        # At rest level: accel should read [0, 0, -g], difference is bias
+        accel_mean = np.mean(accel_data, axis=0)
+        b_accel = accel_mean - np.array([0, 0, -GRAVITY])
         
         # 3. Quaternion initial (magnéto pour yaw, roll/pitch ≈ 0)
+        # Must use same formula as update_heading_magnetometer: atan2(-my, mx)
         mag_mean = np.mean(mag_data, axis=0)
-        yaw_0 = np.arctan2(mag_mean[1], mag_mean[0]) #on suppose le planeur horizontale
+        yaw_0 = np.arctan2(-mag_mean[1], mag_mean[0])  # NED convention
         
         q_0 = Utils.quaternion_from_euler(0, 0, yaw_0)
         

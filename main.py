@@ -77,7 +77,7 @@ def main():
             # Negate Y and Z to align with NED body frame
             accel = np.array([data['ax'], -data['ay'], -data['az']])  # (3,)
             gyro = np.array([data['gx'], -data['gy'], -data['gz']])   # (3,)
-            mag = np.array([data['mx'], data['my'], data['mz']])    # (3,) same transform
+            mag = np.array([data['mx'], data['my'], data['mz']])    # (3,) SAME transform as accel/gyro
             
             imu_data = {'accel': accel, 'gyro': gyro, 'mag': mag}
             
