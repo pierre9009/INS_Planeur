@@ -3,6 +3,7 @@ import numpy as np
 import rerun as rr
 from ekf import EKF
 from imu_api import ImuReader
+from utils import Utils
 
 def main():
     PC_IP = "192.168.1.144"
@@ -103,7 +104,7 @@ def log_to_rerun(ekf, raw_data):
     ba = ekf.x[13:16].flatten()
     
     # ✅ Extraire Roll/Pitch/Yaw depuis quaternion
-    roll, pitch, yaw = quaternion_to_euler(q)
+    roll, pitch, yaw = Utils.quaternion_to_euler(q)
     
     # === 1. VISUALISATION 3D ===
     rr_quat = rr.Quaternion(xyzw=[q[1], q[2], q[3], q[0]])
@@ -153,28 +154,7 @@ def log_to_rerun(ekf, raw_data):
     rr.log("debug/accel_body_y", rr.Scalars([float(raw_data['ay'])]))
     rr.log("debug/accel_body_z", rr.Scalars([float(raw_data['az'])]))
 
-def quaternion_to_euler(q):
-    """
-    Convertit un quaternion [q0, q1, q2, q3] en angles d'Euler (roll, pitch, yaw)
-    Convention: NED frame
-    
-    Returns:
-        roll, pitch, yaw en radians
-    """
-    q0, q1, q2, q3 = q
-    
-    # Roll (rotation autour de X)
-    roll = np.arctan2(2*(q0*q1 + q2*q3), (q0*q0+q3*q3-q1*q1-q2*q2))
-    
-    # Pitch (rotation autour de Y)
-    sin_pitch = 2*(q0*q2 - q3*q1)
-    sin_pitch = np.clip(sin_pitch, -1.0, 1.0)  # Éviter erreurs numériques
-    pitch = np.arcsin(sin_pitch)
-    
-    # Yaw (rotation autour de Z)
-    yaw = np.arctan2(2*(q0*q3 + q1*q2), (q0*q0+q1*q1-q2*q2-q3*q3))
-    
-    return roll, pitch, yaw
+
 
 if __name__ == "__main__":
     main()

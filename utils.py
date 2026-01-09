@@ -22,6 +22,28 @@ class Utils:
         
         return np.array([w, x, y, z])
     
+    def quaternion_to_euler(q):
+        """
+        Convertit un quaternion [q0, q1, q2, q3] en angles d'Euler (roll, pitch, yaw)
+        Convention: NED frame
+        
+        Returns:
+            roll, pitch, yaw en radians
+        """
+        q0, q1, q2, q3 = q
+        
+        # Roll (rotation autour de X)
+        roll = np.arctan2(2*(q0*q1 + q2*q3), (q0*q0+q3*q3-q1*q1-q2*q2))
+        
+        # Pitch (rotation autour de Y)
+        sin_pitch = 2*(q0*q2 - q3*q1)
+        sin_pitch = np.clip(sin_pitch, -1.0, 1.0)  # Éviter erreurs numériques
+        pitch = np.arcsin(sin_pitch)
+        
+        # Yaw (rotation autour de Z)
+        yaw = np.arctan2(2*(q0*q3 + q1*q2), (q0*q0+q1*q1-q2*q2-q3*q3))
+        return roll, pitch, yaw
+    
     
     def quaternion_to_rotation_matrix(q):
         """
