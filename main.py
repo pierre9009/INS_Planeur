@@ -75,8 +75,8 @@ def main():
             # Coordinate transform: IMU frame → body frame (NED-aligned)
             # Both accel and gyro must use the SAME transformation
             # If ICM-20948 Z-axis points up and we want NED (Z-down), negate Z only
-            accel = np.array([data['ax'], -data['ay'], -data['az']])  # (3,)
-            gyro = np.array([data['gx'], -data['gy'], -data['gz']])   # (3,)
+            accel = np.array([data['ax'], data['ay'], -data['az']])  # (3,)
+            gyro = np.array([data['gx'], data['gy'], -data['gz']])   # (3,)
             mag = np.array([data['mx'], data['my'], data['mz']])       # (3,)
             
             imu_data = {'accel': accel, 'gyro': gyro, 'mag': mag}
