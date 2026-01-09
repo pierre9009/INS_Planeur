@@ -43,12 +43,13 @@ class EKF:
         ])
         
         # 3. Bruit de processus (16, 16)
+        # Bias process noise increased to allow faster adaptation
         self.Q = np.diag([
             1e-5, 1e-5, 1e-5, 1e-5,      # quaternion
             1e-2, 1e-2, 1e-2,            # position
             5e-3, 5e-3, 5e-3,            # vitesse
-            1e-8, 1e-8, 1e-8,            # biais gyro
-            1e-6, 1e-6, 1e-6             # biais accel
+            1e-6, 1e-6, 1e-6,            # biais gyro (increased from 1e-8)
+            1e-4, 1e-4, 1e-4             # biais accel (increased from 1e-6)
         ])
         
         # 4. Bruits de mesure (multiples) (à ajuster selon datasheet)
@@ -180,6 +181,9 @@ class EKF:
         dq = 0.5 * (Utils.skew_4x4(omega) @ q)
         q_new = q + dq * dt
         q_new = q_new / np.linalg.norm(q_new)
+        # Enforce quaternion sign continuity (q and -q represent same rotation)
+        if q_new[0, 0] < 0:
+            q_new = -q_new
 
         # 2. Propager vitesse
         R = Utils.quaternion_to_rotation_matrix(q) #body vers NED
@@ -294,30 +298,52 @@ class EKF:
         # 8. Update covariance
         I_KH = np.eye(16) - K @ H
         self.P = I_KH @ self.P
-        
+
         # 9. Normaliser quaternion après update
         self.x[0:4] = self.x[0:4] / np.linalg.norm(self.x[0:4])
+        # Enforce quaternion sign continuity
+        if self.x[0, 0] < 0:
+            self.x[0:4] = -self.x[0:4]
 
 
     def update_accel_gravity(self, imu_data):
+        """
+        Update EKF with accelerometer measurement for roll/pitch correction.
 
+        Measurement model: z = R^T @ [0, 0, -g]^T + b_accel + noise
+        where R is body→NED rotation matrix, so R^T is NED→body.
+        """
         if not self.isInitialized:
             return
-        
+
         q = self.x[0:4]
         q0, q1, q2, q3 = q.flatten()
+        b_accel = self.x[13:16]  # Accelerometer bias
 
-        z = imu_data['accel'].reshape((3,1))
+        z = imu_data['accel'].reshape((3, 1))
 
-        h = Utils.quaternion_to_rotation_matrix(self.x[0:4]).T @ np.array([[0], [0], [-GRAVITY]])
+        # Measurement prediction: h(x) = R^T @ [0, 0, -g]^T + b_accel
+        R_T = Utils.quaternion_to_rotation_matrix(q).T  # NED → body
+        h = R_T @ np.array([[0], [0], [-GRAVITY]]) + b_accel
 
         y = z - h
 
-        H_jaco = np.array([[-2*q2*GRAVITY, 2*q3*GRAVITY, -2*q0*GRAVITY, 2*q1*GRAVITY],
-                      [2*q1*GRAVITY, 2*q0*GRAVITY, 2*q3*GRAVITY, 2*q2*GRAVITY],
-                      [0, -4*q1*GRAVITY, -4*q2*GRAVITY, 0]])
-        H_jaco = -1*H_jaco
-        H = np.hstack((H_jaco, np.zeros((3,12))))
+        # Jacobian ∂h/∂q (derived analytically from h = R^T @ [0,0,-g]^T):
+        # h1 = -2g*(q1*q3 - q0*q2) = 2g*q0*q2 - 2g*q1*q3
+        # h2 = -2g*(q2*q3 + q0*q1) = -2g*q0*q1 - 2g*q2*q3
+        # h3 = -g + 2g*(q1² + q2²)
+        H_q = np.array([
+            [ 2*q2*GRAVITY, -2*q3*GRAVITY,  2*q0*GRAVITY, -2*q1*GRAVITY],
+            [-2*q1*GRAVITY, -2*q0*GRAVITY, -2*q3*GRAVITY, -2*q2*GRAVITY],
+            [            0,  4*q1*GRAVITY,  4*q2*GRAVITY,             0]
+        ])
+
+        # Full Jacobian H (3×16):
+        # [H_q(3×4), zeros(3×3), zeros(3×3), zeros(3×3), I(3×3)]
+        #  quat      pos         vel         bg          ba
+        H = np.zeros((3, 16))
+        H[:, 0:4] = H_q              # ∂h/∂q
+        H[:, 13:16] = np.eye(3)      # ∂h/∂b_accel = I(3×3)
 
         S = H @ self.P @ H.T + self.R_accel
         K = self.P @ H.T @ np.linalg.inv(S)
@@ -325,8 +351,11 @@ class EKF:
 
         I_KH = np.eye(16) - K @ H
         self.P = I_KH @ self.P
-        
+
+        # Normalize quaternion and enforce continuity
         self.x[0:4] = self.x[0:4] / np.linalg.norm(self.x[0:4])
+        if self.x[0, 0] < 0:
+            self.x[0:4] = -self.x[0:4]
     
     
     def update_heading_gps(self, gps_data):
@@ -407,6 +436,9 @@ class EKF:
         # 11. Update covariance
         I_KH = np.eye(16) - K @ H
         self.P = I_KH @ self.P
-        
+
         # 12. Normaliser quaternion
         self.x[0:4] = self.x[0:4] / np.linalg.norm(self.x[0:4])
+        # Enforce quaternion sign continuity
+        if self.x[0, 0] < 0:
+            self.x[0:4] = -self.x[0:4]

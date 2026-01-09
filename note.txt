@@ -1,9 +1,0 @@
-yaw qui part en couille
-tuner les matrices pour meilleurs estimation cad plus smooth/tej plus de bruit (methode ?)
-revoir les quaternions et l'orientation en gros faut resoudre le fait que le planeur saute + rotationer le model 3D
-
-biais accel qui varie jamais + reste a l'init sauf que le fait que le planeur est pas parfaitement droit creer un supposé bias or c'est faux juste il est pas droit
-derive vitesse tres tres forte.
-
-tester avec gps pour ca faut faire driver
-

@@ -72,8 +72,11 @@ def main():
             dt = current_time - last_time
             last_time = current_time
             
-            accel = np.array([data['ax'], -data['ay'], -data['az']])  # (3,) voir datasheet p83
-            gyro = np.array([data['gx'], data['gy'], data['gz']])      # (3,)
+            # Coordinate transform: IMU frame → body frame (NED-aligned)
+            # Both accel and gyro must use the SAME transformation
+            # If ICM-20948 Z-axis points up and we want NED (Z-down), negate Z only
+            accel = np.array([data['ax'], -data['ay'], -data['az']])  # (3,)
+            gyro = np.array([data['gx'], -data['gy'], -data['gz']])   # (3,)
             mag = np.array([data['mx'], data['my'], data['mz']])       # (3,)
             
             imu_data = {'accel': accel, 'gyro': gyro, 'mag': mag}
@@ -103,11 +106,12 @@ def log_to_rerun(ekf, raw_data):
     bg = ekf.x[10:13].flatten()
     ba = ekf.x[13:16].flatten()
     
-    # ✅ Extraire Roll/Pitch/Yaw depuis quaternion
     roll, pitch, yaw = Utils.quaternion_to_euler(q)
     
     # === 1. VISUALISATION 3D ===
-    rr_quat = rr.Quaternion(xyzw=[q[1], q[2], q[3], q[0]])
+    # EKF quaternion transforms body→NED, but Rerun Transform3D needs NED→body
+    # for the child frame rotation. Use conjugate (negate vector part) to invert.
+    rr_quat = rr.Quaternion(xyzw=[-q[1], -q[2], -q[3], q[0]])
     rr.log("world/glider", rr.Transform3D(translation=pos, rotation=rr_quat))
     rr.log("world/glider/body", rr.Boxes3D(half_sizes=[0.5, 0.2, 0.05], colors=[0, 255, 0]))
     
