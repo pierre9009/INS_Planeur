@@ -131,7 +131,8 @@ class EKF:
         
         # Roll et Pitch depuis accéléromètre (suppose immobile)
         # Accéléromètre mesure -g en body frame
-        ax, ay, az = accel_mean
+        gx, gy, gz = -accel_mean
+        ax, ay, az = gx, gy, gz
         
         roll_0 = np.arctan2(ay, az)  # Rotation autour de X
         pitch_0 = np.arctan2(-ax, np.sqrt(ay**2 + az**2))  # Rotation autour de Y
