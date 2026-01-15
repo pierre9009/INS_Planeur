@@ -10,7 +10,7 @@ if parent_dir not in sys.path:
 
 from ekf.imu_api import ImuReader
 
-with open("imu_data.log", "w") as f, ImuReader.ImuReader() as imu:
+with open("imu_data.log", "w") as f, ImuReader(port="/dev/ttyS0", baudrate=115200) as imu:
     print("Enregistrement dans imu_data.log (Ctrl+C pour arrêter)...")
     while True:
         m = imu.read()
