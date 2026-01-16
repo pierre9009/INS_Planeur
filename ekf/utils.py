@@ -124,14 +124,5 @@ class Utils:
         assert F.shape == (16,16)
 
         return F
-    
-    def remove_yaw_from_quaternion(self, q):
-
-        roll, pitch, yaw = self.quaternion_to_euler(q)
-
-        quaternion = self.quaternion_from_euler(roll, pitch, 0.0)
-
-
-        return quaternion
 
 
